@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>IBF Routine v1: Method and Design Note</title>
+<style>
+  :root{--ink:#20323F;--muted:#5C6F7C;--line:#D8E0E6;--bg:#EEF2F5}
+  *{box-sizing:border-box} body{margin:0;font:15px/1.6 "Segoe UI",system-ui,-apple-system,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:#123049;color:#fff;padding:22px 20px}
+  header h1{margin:0;font-size:20px;font-weight:650}
+  header a{color:#BCD3E6;font-size:13px;text-decoration:none}
+  header a:hover{text-decoration:underline}
+  main{max-width:860px;margin:0 auto;padding:26px 18px 46px}
+  .paper{background:#fff;border:1px solid var(--line);border-radius:10px;padding:26px 32px}
+  h2{font-size:17px;margin:26px 0 8px;color:#123049}
+  h2:first-child{margin-top:0}
+  p,li{font-size:14.5px;color:#334754}
+  table{border-collapse:collapse;width:100%;margin:12px 0;font-size:13.5px}
+  th,td{border:1px solid var(--line);padding:7px 10px;text-align:left;vertical-align:top}
+  th{background:#F3F6F8;font-weight:650}
+  .ref{font-size:12.5px;color:var(--muted);border-top:1px solid var(--line);margin-top:24px;padding-top:12px}
+  ol li{margin-bottom:6px}
+</style>
+</head>
+<body>
+<header>
+  <a href="../">Back to the viewer</a>
+  <h1>IBF Routine v1: Method and Design Note</h1>
+</header>
+<main><div class="paper">
+
+<h2>1. Purpose</h2>
+<p>This note documents the first complete version of the impact-based forecasting (IBF) product
+for the project pilots in Guatemala and Barbados. The routine converts the modelling team's
+event outputs (flood depth, velocity and exceedance-probability grids sampled onto buildings,
+roads and administrative units) into operational warning maps in which every receptor carries
+a warning colour.</p>
+
+<h2>2. Review of the preliminary analysis</h2>
+<p>The team's event-1 package contains, for Guatemala, a deterministic depth grid, four
+ensemble exceedance grids (depth of 7.62, 10, 30 and 76 cm or more), a land-use grid, and a
+GeoPackage of 4,686 buildings, 458 road segments and 2 municipal units with raster values
+sampled per feature. For Barbados it contains depth, velocity and hazard-class grids and a
+GeoPackage of 178,084 buildings, 55,846 road segments and 609 enumeration districts with
+census population. The main gaps that kept this from being a final product:</p>
+<ol>
+  <li>Likelihood and impact were never combined into a warning level anywhere. Guatemala has
+      likelihood but no impact classification; Barbados has a hazard class but no likelihood.</li>
+  <li>No map product existed, only data tables and grids.</li>
+  <li>Legends were inconsistent and non-standard across the two pilots.</li>
+  <li>Unit ambiguities: Barbados depth stored as integers (assumed cm) and velocity in a grid
+      whose values imply mm/s despite its label.</li>
+  <li>Guatemala population spreads full municipal totals over pilot-area buildings only,
+      overstating occupancy (about 62 persons per building).</li>
+  <li>Internal inconsistencies: 6,469 Barbados buildings with sampled depth of 0.3 m or more
+      carry hazard class 0, and the warning-flag fields in Guatemala are all zero.</li>
+</ol>
+
+<h2>3. The adopted standard</h2>
+<p>The product follows Speight et al. (2018), the Glasgow operational surface-water IBF pilot,
+whose framework is the Scottish Flood Forecasting Service and UK Flood Guidance Statement
+standard. The warning level of every feature is the matrix combination of likelihood and
+potential impact severity, rendered green, yellow, amber and red.</p>
+<table>
+  <tr><th>Likelihood band (FGS)</th><th>Probability of occurrence</th></tr>
+  <tr><td>Very Low</td><td>below 20 percent</td></tr>
+  <tr><td>Low</td><td>20 to 40 percent</td></tr>
+  <tr><td>Medium</td><td>40 to 60 percent</td></tr>
+  <tr><td>High</td><td>above 60 percent</td></tr>
+</table>
+<p>Probabilities below 5 percent fall under the reporting threshold. Likelihood comes from the
+ensemble flood-map library: the probability of exceeding 10 cm feeds the Minor threshold,
+30 cm feeds Significant, and 76 cm feeds Severe. A feature's colour is the worst matrix cell
+across those severity-specific probabilities, which is the paper's approach evaluated per
+receptor instead of per kilometre cell.</p>
+<table>
+  <tr><th>Receptor</th><th>Minimal</th><th>Minor</th><th>Significant</th><th>Severe</th></tr>
+  <tr><td>Buildings (people and property)</td><td>below 0.1 m</td><td>0.1 to 0.3 m</td><td>0.3 to 0.76 m</td><td>0.76 m and deeper</td></tr>
+  <tr><td>Roads (transport)</td><td>below 0.1 m</td><td>0.1 to 0.3 m</td><td>0.3 to 0.5 m</td><td>0.5 m and deeper</td></tr>
+</table>
+<p>Where velocity exists (Barbados), severity is upgraded with the flood hazard rating
+HR = d x (v + 0.5) + 0.5 (urban debris factor): an HR of 1.25 or more gives at least
+Significant and 2.0 or more gives Severe, the danger-to-people classes of FD2320 and FD2321.
+District overall risk aggregates feature results through thresholds adapted from the paper's
+Table 1: at least one flooded residential property gives Minor; any residential property at
+Significant severity or worse, more than 2 non-residential receptors flooded, or more than 5 m
+of road at Significant severity gives Significant; more than 100 residential properties at
+Significant severity or worse gives Severe. The class is then combined with district
+likelihood through the matrix. All thresholds are configuration values, not code.</p>
+
+<h2>4. Event-1 results</h2>
+<p>Guatemala: 164 buildings yellow and 80 amber along the Rio Villalobos corridor, 8.2 km of
+road at yellow or worse, and both municipios at LOW overall risk, a correctly quiet product
+for an event seen by one ensemble member in five. Barbados: 23,371 buildings yellow, 8,487
+amber and 5,469 red, 774 km of road at amber or worse, and 365 districts at MEDIUM with 33 at
+HIGH under the deterministic-likelihood assumption.</p>
+
+<h2>5. Assumptions to confirm and data requested</h2>
+<ol>
+  <li>Ensemble exceedance grids for Barbados (the sample numbering implies more members
+      exist). This replaces the deterministic-likelihood assumption, the main gap in v1.</li>
+  <li>A larger ensemble for Guatemala: five members quantize probability to 20 percent steps.</li>
+  <li>Corrected population disaggregation for Guatemala (census blocks or WorldPop), so
+      population exposed becomes reportable.</li>
+  <li>Critical-facility receptors (health, schools, emergency services, utilities) to activate
+      the community-services thresholds, which v1 proxies with non-residential buildings.</li>
+  <li>Confirmation of Barbados units (depth in cm, velocity in mm/s) and of the meaning of the
+      residential classes.</li>
+</ol>
+
+<h2>6. Iteration plan</h2>
+<p>v1.1 applies the team's answers on units and ensembles and tunes district thresholds
+jointly. v1.2 adds the time dimension (per-forecast-cycle maps and a worst-cell-in-24-hours
+header, as in the FEWS Glasgow reports) and critical facilities as a third receptor group.
+v2 connects the routine to the live likelihood outputs of the operational pipeline so each
+forecast cycle publishes these maps automatically.</p>
+
+<div class="ref">References: Speight, L., et al. (2018). Developing surface water flood
+forecasting capabilities in Scotland: an operational pilot for the 2014 Commonwealth Games in
+Glasgow. Journal of Flood Risk Management 11, S884-S901. SEPA and Met Office (2015). Your
+guide to using the Flood Guidance Statement, third publication. Environment Agency and HR
+Wallingford, FD2320 and FD2321 flood hazard rating. WMO No. 1150, Guidelines on Multi-hazard
+Impact-based Forecast and Warning Services.</div>
+</div></main>
+</body>
+</html>

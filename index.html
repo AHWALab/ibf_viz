@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Impact-Based Flood Forecast Viewer</title>
+<style>
+  :root{
+    --g:#63BE5F; --y:#FFD500; --a:#F58220; --r:#DA291C;
+    --ink:#20323F; --muted:#5C6F7C; --line:#D8E0E6; --bg:#EEF2F5;
+  }
+  *{box-sizing:border-box} body{margin:0;font:15px/1.55 "Segoe UI",system-ui,-apple-system,Arial,sans-serif;color:var(--ink);background:var(--bg)}
+  header{background:#123049;color:#fff;padding:34px 20px 30px;text-align:center}
+  header h1{margin:0 0 6px;font-size:26px;font-weight:650;letter-spacing:.3px}
+  header p{margin:0;font-size:14px;opacity:.85}
+  main{max-width:980px;margin:0 auto;padding:26px 18px 40px}
+  .intro{background:#fff;border:1px solid var(--line);border-radius:10px;padding:18px 22px;font-size:14.5px;color:#39505F}
+  .cards{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin:20px 0}
+  @media (max-width:760px){.cards{grid-template-columns:1fr}}
+  .card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px 22px;display:flex;flex-direction:column}
+  .card h2{margin:0 0 2px;font-size:18px}
+  .badge{display:inline-block;background:#2C557C;color:#fff;border-radius:4px;padding:2px 8px;font-size:10.5px;font-weight:700;letter-spacing:.5px;vertical-align:3px;margin-left:6px}
+  .card .where{color:var(--muted);font-size:13px;margin-bottom:12px}
+  .stats{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+  .stat{border-radius:6px;padding:6px 10px;font-size:12px;font-weight:700;color:rgba(0,0,0,.62)}
+  .stat small{display:block;font-weight:600;font-size:10px;opacity:.75}
+  .card p.desc{font-size:13.5px;color:#39505F;margin:0 0 16px}
+  .btn{margin-top:auto;display:inline-block;text-align:center;background:#123049;color:#fff;text-decoration:none;border-radius:7px;padding:10px 14px;font-weight:650;font-size:14px}
+  .btn:hover{background:#1B4266}
+  h3.sec{font-size:13px;text-transform:uppercase;letter-spacing:.7px;color:var(--muted);margin:26px 0 10px}
+  table.matrix{border-collapse:collapse;margin:0 auto}
+  table.matrix td,table.matrix th{border:2px solid var(--bg);width:96px;height:34px;text-align:center;font-size:12px}
+  table.matrix th{color:var(--muted);font-weight:600;background:#fff}
+  .mrow{display:flex;justify-content:center;gap:10px;margin-top:10px;flex-wrap:wrap}
+  .mrow span{font-size:12px;font-weight:700;padding:4px 12px;border-radius:4px;color:rgba(0,0,0,.62)}
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+  @media (max-width:760px){.grid2{grid-template-columns:1fr}}
+  .mini{background:#fff;border:1px solid var(--line);border-radius:10px;padding:16px 20px;font-size:13.5px;color:#39505F}
+  .mini a{color:#175A8E;font-weight:650;text-decoration:none}
+  .mini a:hover{text-decoration:underline}
+  footer{max-width:980px;margin:0 auto;padding:0 18px 34px;font-size:12px;color:var(--muted)}
+</style>
+</head>
+<body>
+<header>
+  <h1>Impact-Based Flood Forecast Viewer</h1>
+  <p>Flash flood and urban flood early warning, IBF component. AHWA Lab, University of Iowa. WMO project, 2026.</p>
+</header>
+<main>
+  <div class="intro">
+    These operational maps combine <b>flood likelihood</b> from ensemble flood-map libraries with
+    <b>potential impact severity</b> for every building, road segment and district. The warning colour of
+    each feature comes from the Flood Risk Matrix of the Scottish Flood Forecasting Service and the UK
+    Flood Guidance Statement, as applied operationally in Speight et al. (2018). Green means business as
+    usual. Yellow means be aware. Amber means be prepared. Red means take action, with danger to life.
+  </div>
+
+  <div class="cards">
+    <div class="card">
+      <h2>Guatemala <span class="badge">PROBABILISTIC</span></h2>
+      <div class="where">Rio Villalobos pilot: Villa Canales and San Miguel Petapa. Flash-flood event 1.</div>
+      <div class="stats">
+        <span class="stat" style="background:var(--y)">164<small>buildings yellow</small></span>
+        <span class="stat" style="background:var(--a)">80<small>buildings amber</small></span>
+        <span class="stat" style="background:#E8EDF1">8.2 km<small>road at risk</small></span>
+      </div>
+      <p class="desc">Likelihood from ensemble exceedance grids (10, 30 and 76 cm) applied per receptor.
+        Both municipios sit at LOW overall risk for this one-in-five-member event.</p>
+      <a class="btn" href="guatemala/">Open the Guatemala map</a>
+    </div>
+    <div class="card">
+      <h2>Barbados <span class="badge">DETERMINISTIC SCENARIO</span></h2>
+      <div class="where">Island-wide flash-flood scenario, 609 enumeration districts. Event 1.</div>
+      <div class="stats">
+        <span class="stat" style="background:var(--y)">23,371<small>buildings yellow</small></span>
+        <span class="stat" style="background:var(--a)">8,487<small>buildings amber</small></span>
+        <span class="stat" style="background:var(--r);color:#fff">5,469<small>buildings red</small></span>
+      </div>
+      <p class="desc">Depth and velocity based severity for 178,084 buildings and 55,846 road segments.
+        33 districts reach HIGH overall risk under the single-scenario likelihood assumption.</p>
+      <a class="btn" href="barbados/">Open the Barbados map</a>
+    </div>
+  </div>
+
+  <h3 class="sec">The warning standard</h3>
+  <table class="matrix">
+    <tr><th></th><th>Minimal</th><th>Minor</th><th>Significant</th><th>Severe</th></tr>
+    <tr><th>High</th><td style="background:var(--g)"></td><td style="background:var(--y)"></td><td style="background:var(--a)"></td><td style="background:var(--r)"></td></tr>
+    <tr><th>Medium</th><td style="background:var(--g)"></td><td style="background:var(--y)"></td><td style="background:var(--a)"></td><td style="background:var(--a)"></td></tr>
+    <tr><th>Low</th><td style="background:var(--g)"></td><td style="background:var(--y)"></td><td style="background:var(--y)"></td><td style="background:var(--a)"></td></tr>
+    <tr><th>Very Low</th><td style="background:var(--g)"></td><td style="background:var(--g)"></td><td style="background:var(--y)"></td><td style="background:var(--y)"></td></tr>
+  </table>
+  <div class="mrow">
+    <span style="background:var(--g)">VERY LOW</span>
+    <span style="background:var(--y)">LOW</span>
+    <span style="background:var(--a)">MEDIUM</span>
+    <span style="background:var(--r);color:#fff">HIGH</span>
+  </div>
+
+  <h3 class="sec">Documentation</h3>
+  <div class="grid2">
+    <div class="mini">
+      <a href="methods/">Method and design note</a><br/>
+      The adopted standard, severity and likelihood rules, district aggregation thresholds,
+      review of the preliminary analysis, and the data requests for the next iteration.
+    </div>
+    <div class="mini">
+      <a href="https://github.com/AHWALab/ibf_viz">Repository</a><br/>
+      Source of this site. The maps are generated by a configurable Python routine
+      (ibf_routine.py) and rebuilt per forecast event.
+    </div>
+  </div>
+</main>
+<footer>
+  Version 1, August 2026. Rows of the matrix are likelihood (FGS bands); columns are potential impact severity.
+  Standard: Speight et al. (2018) J Flood Risk Management 11:S884-S901; SEPA and Met Office FGS user guide (2015);
+  EA and HR Wallingford flood hazard rating (FD2320, FD2321); WMO No. 1150 IBF guidelines.
+</footer>
+</body>
+</html>
