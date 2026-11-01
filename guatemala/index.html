@@ -810,7 +810,7 @@ document.getElementById('subline').textContent = META.event + ', first version (
 const map = L.map('map', {preferCanvas:true, renderer:L.canvas({padding:0.4}), zoomControl:false});
 map.attributionControl.setPrefix(false);
 L.control.zoom({zoomInText:'+', zoomOutText:'-'}).addTo(map);
-const baseLight = L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png',
+const baseLight = L.tileLayer('https://basemaps.cartocdn.com/rastertiles/light_all/{z}/{x}/{y}{r}.png?key=cb1_2hul_1_d1beea1581cc2f8c94ba52d4',
   {maxZoom:20, attribution:'(c) OpenStreetMap contributors, (c) CARTO'});
 const baseOSM = L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png',
   {maxZoom:19, attribution:'(c) OpenStreetMap contributors'});
